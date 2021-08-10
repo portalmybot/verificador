@@ -1,0 +1,30 @@
+{
+  "name": "verificador",
+  "version": "0.0.1",
+  "description": "Verificador app built on fastify, instantly up and running.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "fastify": "^3.14.1",
+    "fastify-formbody": "^5.0.0",
+    "fastify-static": "^4.0.0",
+    "handlebars": "^4.7.7",
+    "point-of-view": "^4.14.0",
+    "fastify-oauth2": "^4.2.3",
+    "fastify-env": "^2.1.1"
+  },
+  "engines": {
+    "node": "12.x"
+  },
+  "repository": {
+    "url": "https://github.com/CraterMaik"
+  },
+  "license": "MIT",
+  "keywords": [
+    "node",
+    "mybot",
+    "fastify"
+  ]
+}
