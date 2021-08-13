@@ -35,6 +35,16 @@ fastify.register(require("point-of-view"), {
   }
 });
 
+const messageWelcome = `¡Genial!, te has verificado correctamente en nuestra comunidad.
+
+Recuerda con el fin de organizar mejor el contenido de las publicaciones y facilitar la ayuda de informacion de sus consultas, agradecemos a los miembros de la Comunidad utilizar los canales correspodientes con el tema que van a publicar.
+[Enlaces]
+**Portal mybot**
+https://portalmybot.com/
+
+**Discord invitación**
+https://discord.gg/g6ssSmK`;
+
 fastify.get("/", async function(request, reply) {
   if (!request.query['code'])
    return reply.redirect(fastify.config.REDIRECT_URL)
@@ -43,7 +53,7 @@ fastify.get("/", async function(request, reply) {
 
     await addRole(discordUser.id, '312846399731662850', '359481600347602944');
     await removeRole(discordUser.id, '312846399731662850', '495089310626873365');
-    await sendMD(discordUser.id, 'Bienvenido');
+    await sendMD(discordUser.id, messageWelcome);
 
     let params = {
       id: discordUser.id,
