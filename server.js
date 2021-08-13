@@ -5,15 +5,15 @@ const fastify = require("fastify")({
   logger: false
 });
 
-
 const schema = {
   type: 'object',
-  required: ['REDIRECT_URL', 'DISCORD_REDIRECT_URI', 'DISCORD_CLIENT_ID', 'DISCORD_CLIENT_SECRET'],
+  required: ['REDIRECT_URL', 'DISCORD_REDIRECT_URI', 'DISCORD_CLIENT_ID', 'DISCORD_CLIENT_SECRET', 'DISCORD_TOKEN_BOT'],
   properties: {
     REDIRECT_URL: { type: 'string' },
     DISCORD_REDIRECT_URI: { type: 'string' },
     DISCORD_CLIENT_ID: { type: 'string' },
-    DISCORD_CLIENT_SECRET: { type: 'string' }
+    DISCORD_CLIENT_SECRET: { type: 'string' },
+    DISCORD_TOKEN_BOT: { type: 'string' }
   }
 }
 
@@ -40,7 +40,11 @@ fastify.get("/", async function(request, reply) {
    return reply.redirect(fastify.config.REDIRECT_URL)
     const access_token = await discordFetchState(request.query['code'].toString());
     const discordUser = await discordFetchUser(access_token);
-    
+
+    await addRole(discordUser.id, '312846399731662850', '359481600347602944');
+    await removeRole(discordUser.id, '312846399731662850', '495089310626873365');
+    await sendMD(discordUser.id, 'Bienvenido');
+
     let params = {
       id: discordUser.id,
       username: discordUser.username,
@@ -97,10 +101,72 @@ async function discordFetchState(code) {
 }
 
 async function discordFetchUser(access_token) {
-  const res = await fetch('https://discordapp.com/api/users/@me', {
+  const res = await fetch('https://discord.com/api/users/@me', {
     headers: {
       'Authorization': 'Bearer ' + access_token
     }
   })
   return await res.json();
+}
+
+async function addRole(iduser, idguild, idrol) {
+  const userID = iduser;
+  const guildID = idguild;
+  const roleID = idrol;
+
+  await fetch(`https://discord.com/api/guilds/${guildID}/members/${userID}/roles/${roleID}`, {
+    method: "put",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bot ${fastify.config.DISCORD_TOKEN_BOT}`
+    }
+  })
+  
+}
+async function removeRole(iduser, idguild, idrol) {
+  const userID = iduser;
+  const guildID = idguild;
+  const roleID = idrol;
+
+  await fetch(`https://discord.com/api/guilds/${guildID}/members/${userID}/roles/${roleID}`, {
+    method: "delete",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bot ${fastify.config.DISCORD_TOKEN_BOT}`
+    }
+  })
+  
+}
+
+async function sendMD(iduser, content) {
+  try {
+
+    const res = await fetch('https://discord.com/api/users/@me/channels', {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bot ${fastify.config.DISCORD_TOKEN_BOT}`
+      },
+      body: JSON.stringify({
+        recipient_id: iduser
+      })
+    })
+    
+    const userMD = await res.json();
+    const channelId = userMD.id
+   
+    await fetch(`https://discord.com/api/channels/${channelId}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bot ${fastify.config.DISCORD_TOKEN_BOT}`
+      },
+      body: JSON.stringify({
+        "content": content,
+      })
+    })
+
+  } catch (err) {
+    console.error(`No se pudo enviar un mensaje al usuario ${iduser}`, err)
+  }
 }
