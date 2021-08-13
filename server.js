@@ -53,7 +53,9 @@ fastify.get("/", async function(request, reply) {
 
     await addRole(discordUser.id, '312846399731662850', '359481600347602944');
     await removeRole(discordUser.id, '312846399731662850', '495089310626873365');
-    await sendMD(discordUser.id, messageWelcome);
+    await sendToChannel('464153472946929665', `<@${discordUser.id}>, Bienvenid@ a **MyBOT Team**
+Para obtener más información acerca del servidor lea <#359421930303913995> y <#359422036625588235>.`);
+    await sendToUser(discordUser.id, messageWelcome);
 
     let params = {
       id: discordUser.id,
@@ -148,7 +150,23 @@ async function removeRole(iduser, idguild, idrol) {
   
 }
 
-async function sendMD(iduser, content) {
+async function sendToChannel(idchannel, content) {
+  const channelId = idchannel;
+   
+  await fetch(`https://discord.com/api/channels/${channelId}/messages`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bot ${fastify.config.DISCORD_TOKEN_BOT}`
+    },
+    body: JSON.stringify({
+      "content": content,
+      "tts": false
+    })
+  })
+}
+
+async function sendToUser(iduser, content) {
   try {
 
     const res = await fetch('https://discord.com/api/users/@me/channels', {
