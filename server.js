@@ -38,6 +38,7 @@ fastify.register(require("point-of-view"), {
 const messageWelcome = `¡Genial!, te has verificado correctamente en nuestra comunidad.
 
 Recuerda con el fin de organizar mejor el contenido de las publicaciones y facilitar la ayuda de informacion de sus consultas, agradecemos a los miembros de la Comunidad utilizar los canales correspodientes con el tema que van a publicar.
+
 [Enlaces]
 **Portal mybot**
 https://portalmybot.com/
@@ -53,8 +54,33 @@ fastify.get("/", async function(request, reply) {
 
     await addRole(discordUser.id, '312846399731662850', '359481600347602944');
     await removeRole(discordUser.id, '312846399731662850', '495089310626873365');
-    await sendToChannel('464153472946929665', `<@${discordUser.id}>, Bienvenid@ a **MyBOT Team**
-Para obtener más información acerca del servidor lea <#359421930303913995> y <#359422036625588235>.`);
+
+    let msg = `<@${discordUser.id}>, Bienvenid@ a **MyBOT Team**\nPara obtener más información acerca del servidor lea <#359421930303913995> y <#359422036625588235>.`;
+
+    let msgEmbed = [{
+      "author": {
+        "name": `Usuario verificado : ${discordUser.username} (${discordUser.id})`,
+        "icon_url": discordUser.avatar ? 'https://cdn.discordapp.com/avatars/' + discordUser.id + '/' + discordUser.avatar + '.jpeg' : 'https://i.imgur.com/DC0Kp0D.png',
+        "proxy_icon_url": 'https://portalmybot.com/'
+      },
+      "color": 65535
+    }];
+
+    let msgEmbedLog = [{
+      "author": {
+        "name": `${discordUser.username}#${discordUser.discriminator} | (${discordUser.id})`,
+        "icon_url": discordUser.avatar ? 'https://cdn.discordapp.com/avatars/' + discordUser.id + '/' + discordUser.avatar + '.jpeg' : 'https://i.imgur.com/DC0Kp0D.png',
+        "proxy_icon_url": 'https://portalmybot.com/'
+      },
+      "footer": {
+        "text": "Entrada",
+      },
+      "color": 65280
+    }];
+
+    await sendToChannel('464153472946929665', msg, false);
+    await sendToChannel('516032131726835752', '', msgEmbed);
+    await sendToChannel('464137463426711578', '', msgEmbedLog);
     await sendToUser(discordUser.id, messageWelcome);
 
     let params = {
@@ -63,6 +89,7 @@ Para obtener más información acerca del servidor lea <#359421930303913995> y <
       avatar: discordUser.avatar ? 'https://cdn.discordapp.com/avatars/' + discordUser.id + '/' + discordUser.avatar + '.jpeg' : 'https://i.imgur.com/DC0Kp0D.png',
     }
     reply.view("/src/pages/index.hbs", params);
+
 });
 
 fastify.post("/", function(request, reply) {
@@ -109,7 +136,8 @@ async function discordFetchState(code) {
   if (!responseJsonParsed.access_token) throw new Error('No access_token found');
    const access_token = responseJsonParsed.access_token;
 
-   return access_token;
+  return access_token;
+
 }
 
 async function discordFetchUser(access_token) {
@@ -119,6 +147,7 @@ async function discordFetchUser(access_token) {
     }
   })
   return await res.json();
+
 }
 
 async function addRole(iduser, idguild, idrol) {
@@ -150,19 +179,21 @@ async function removeRole(iduser, idguild, idrol) {
   
 }
 
-async function sendToChannel(idchannel, content) {
+async function sendToChannel(idchannel, content, embeds) {
   const channelId = idchannel;
-   
+  let data = {
+    "content": content,
+    "tts": false
+    }
+  
+  if(embeds) data.embeds = embeds
   await fetch(`https://discord.com/api/channels/${channelId}/messages`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'Authorization': `Bot ${fastify.config.DISCORD_TOKEN_BOT}`
     },
-    body: JSON.stringify({
-      "content": content,
-      "tts": false
-    })
+    body: JSON.stringify(data)
   })
 }
 
@@ -197,4 +228,5 @@ async function sendToUser(iduser, content) {
   } catch (err) {
     console.error(`No se pudo enviar un mensaje al usuario ${iduser}`, err)
   }
+  
 }

@@ -48,4 +48,5 @@ body {
 .center-image {
   margin-left: auto;
   margin-right: auto;
+  margin-bottom: 10px;
 }
