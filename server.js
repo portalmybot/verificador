@@ -7,9 +7,10 @@ const fastify = require("fastify")({
 
 const schema = {
   type: 'object',
-  required: ['REDIRECT_URL', 'DISCORD_REDIRECT_URI', 'DISCORD_CLIENT_ID', 'DISCORD_CLIENT_SECRET', 'DISCORD_TOKEN_BOT'],
+  required: ['REDIRECT_URL', 'DISCORD_INVITE_URL', 'DISCORD_REDIRECT_URI', 'DISCORD_CLIENT_ID', 'DISCORD_CLIENT_SECRET', 'DISCORD_TOKEN_BOT'],
   properties: {
     REDIRECT_URL: { type: 'string' },
+    DISCORD_INVITE_URL: { type: 'string' },
     DISCORD_REDIRECT_URI: { type: 'string' },
     DISCORD_CLIENT_ID: { type: 'string' },
     DISCORD_CLIENT_SECRET: { type: 'string' },
@@ -51,17 +52,21 @@ fastify.get("/", async function(request, reply) {
    return reply.redirect(fastify.config.REDIRECT_URL)
     const access_token = await discordFetchState(request.query['code'].toString());
     const discordUser = await discordFetchUser(access_token);
-
+    const Member =  await getGuildMember(discordUser.id, '312846399731662850');
+    
+    if (!Member.user) return reply.redirect(fastify.config.DISCORD_INVITE_URL)
+    if (Member.roles.includes('359481600347602944')) return reply.redirect(fastify.config.DISCORD_INVITE_URL)
     await addRole(discordUser.id, '312846399731662850', '359481600347602944');
     await removeRole(discordUser.id, '312846399731662850', '495089310626873365');
-
-    let msg = `<@${discordUser.id}>, Bienvenid@ a **MyBOT Team**\nPara obtener más información acerca del servidor lea <#359421930303913995> y <#359422036625588235>.`;
+    
+    let msg = `<@${Member.user.id}>, Bienvenid@ a **MyBOT Team**\nPara obtener más información acerca del servidor lea <#359421930303913995> y <#359422036625588235>.`;
 
     let msgEmbed = [{
       "author": {
-        "name": `Usuario verificado : ${discordUser.username} (${discordUser.id})`,
-        "icon_url": discordUser.avatar ? 'https://cdn.discordapp.com/avatars/' + discordUser.id + '/' + discordUser.avatar + '.jpeg' : 'https://i.imgur.com/DC0Kp0D.png',
+        "name": `Usuario verificado : ${Member.user.username} (${Member.user.id})`,
+        "icon_url": Member.user.avatar ? 'https://cdn.discordapp.com/avatars/' + Member.user.id + '/' + Member.user.avatar + '.jpeg' : 'https://i.imgur.com/DC0Kp0D.png',
         "proxy_icon_url": 'https://portalmybot.com/'
+        
       },
       "color": 65535
     }];
@@ -148,6 +153,20 @@ async function discordFetchUser(access_token) {
   })
   return await res.json();
 
+}
+
+async function getGuildMember(iduser, idguild) {
+  const userID = iduser;
+  const guildID = idguild;
+
+  const res = await fetch(`https://discord.com/api/guilds/${guildID}/members/${userID}`, {
+    method: "get",
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bot ${fastify.config.DISCORD_TOKEN_BOT}`
+    }
+  })
+  return await res.json();
 }
 
 async function addRole(iduser, idguild, idrol) {
