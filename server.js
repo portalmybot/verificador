@@ -102,7 +102,7 @@ fastify.post("/", function(request, reply) {
   
 });
 
-fastify.get('/autorized', async function (request, reply) {
+fastify.get('/authorized', async function (request, reply) {
   if (!request.query['code'])
    return reply.redirect(fastify.config.REDIRECT_URL)
 
